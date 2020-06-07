@@ -1,22 +1,25 @@
+import json
+
 import pymongo
 from flask import Flask, request
 from flask_pymongo import PyMongo
 import models
+from bson.objectid import ObjectId
+
 
 app = Flask(__name__)
 
-def set_db():
-    client = pymongo.MongoClient()
-    db = client["mydb"]
-    collection = db["collection"]
+client = pymongo.MongoClient()
+db = client["mydb"]
+collection = db["collection"]
 
-    admin = {'id': '0',
-                        'username': 'admin',
-                        'password': 'password1',
-                        'token': None,
-                        'token_exp': None}
-    collection.insert(admin)
-    print ('Oh we have an admin')
+admin = {'id': '0',
+         'username': 'admin',
+         'password': 'password1',
+         'token': None,
+         'token_exp': None}
+collection.insert(admin)
+print ('Oh we have an admin')
 
 
 
@@ -35,7 +38,6 @@ def hello_world():
 # registration
 @app.route('/registration', methods=['POST'])
 def registration():
-    set_db()
     if models.User.create_user(request.form['username'], request.form['password']):
         return 'All good', 200
 
@@ -46,9 +48,11 @@ def registration():
 # list of all users
 @app.route('/users', methods=['GET'])
 def users():
-    return 'Hi we are your users', 200
+    for i in range(collection.count_documents({})):
+        user = collection.find_one({'_id': 'i'})
+        print (user)
+    return 'I see my users!'
 
 
 if __name__ == '__main__':
-    app.set_db()
     app.run()

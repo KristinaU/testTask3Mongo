@@ -1,8 +1,17 @@
 
 # Model for User and its methods
+from pymongo import collection
+
+import app
+
+
 class User():
     def create_user(username, password):
-        #    new_user = {'username': username, 'password': password, 'token' : 1223}
+        new_user = {'username' : username,
+                    'password' : password,
+                    'token' : None,
+                    'token_exp' : None}
+        app.collection.insert(new_user)
         return True, 200
 
 
