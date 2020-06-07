@@ -1,15 +1,19 @@
+import pymongo
 from flask import Flask, request
 from flask_pymongo import PyMongo
 import models
 
 app = Flask(__name__)
-app.config["MONGO_URI"] = "mongodb://localhost:27017/myDatabase"
-mongo = PyMongo(app)
+
+myclient = pymongo.MongoClient("mongodb://127.0.0.1:27017/mydb")
+
+mydb = myclient["mydb"]
 
 # Show blank index page just in case
 @app.route('/')
 def index():
     return 'Index Page'
+
 
 # Show hello page to present app working
 @app.route('/hello')
