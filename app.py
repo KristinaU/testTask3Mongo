@@ -14,11 +14,14 @@ client = pymongo.MongoClient()
 db = client["mydb"]
 collection = db["collection"]
 
+#   here return an error of connection not found
+
 admin = {'username': 'admin',
          'password': 'password1',
          'token': None,
          'token_exp': None}
 collection.insert(admin)
+#   here may be an error
 print ('Oh we have an admin')
 
 
@@ -27,6 +30,7 @@ print ('Oh we have an admin')
 @app.route('/')
 def index():
     return 'Index Page'
+#   maybe an error if http server not configured
 
 
 # Show hello page to present app working
@@ -40,6 +44,7 @@ def hello_world():
 def registration():
     user = models.User.create_user(request.form['username'], request.form['password'])
     collection.insert(user)
+#   add errors handler
     return 'Ok', 200
 
 
@@ -47,6 +52,7 @@ def registration():
 @app.route('/users', methods=['GET'])
 def users():
     result = 'So we got the users as: ' + (str(collection.distinct('username')))
+#   add error handler
     return result, 200
 
 
@@ -60,15 +66,25 @@ def login():
     letters = 'abcdefghyjklmnopqrstuvwxyz1234567890'
 
     if check_user(request.form['username'], request.form['password']):
+#   here return an error if check fails
+        token = ''.join(random.choice(letters) for i in range(32))
+
         print('Now is ' + str(start_time))
         print('Token expires at ' + str(expire_time))
-        return ''.join(random.choice(letters) for i in range(32))
+
+        return token, 200
+
     else:
         return 400
 
 
 def check_user(username, password):
-    if username is not None and password is not None:
+    currentpass = collection.find_one({'username': username})['password']
+#   here return an error if username not found
+    print ('Current password = ' + currentpass)
+    print('Request password = ' + password)
+    print(currentpass == password)
+    if (currentpass == password):
         return True, 200
     else:
         return False, 400

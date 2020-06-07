@@ -14,6 +14,12 @@ class User():
         return new_user
 
 
+    def set_token(self, token, token_exp):
+        self.set({'token' : token})
+        self.set({'token_exp': token_exp})
+        return self
+
+
 # Model for Item and its methods
 class Item():
     def create_item(id, name, attr1):
