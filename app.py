@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, request
 from flask_pymongo import PyMongo
 
 
@@ -16,6 +16,20 @@ def index():
 def hello_world():
     return 'Hello World!'
 
+
+# registration
+@app.route('/registration', methods=['POST'])
+def registration():
+    if create_user(request.form['username'], request.form['password']):
+        return 'yeah haaahhh', 200
+
+    else:
+        return 'Ohh nooo', 400
+
+
+def create_user(username, password):
+#    new_user = {'username': username, 'password': password, 'token' : 1223}
+    return True
 
 if __name__ == '__main__':
     app.run()
