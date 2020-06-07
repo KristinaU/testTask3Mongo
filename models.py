@@ -11,8 +11,7 @@ class User():
                     'password' : password,
                     'token' : None,
                     'token_exp' : None}
-        app.collection.insert(new_user)
-        return True, 200
+        return new_user
 
 
 # Model for Item and its methods

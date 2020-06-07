@@ -6,15 +6,13 @@ from flask_pymongo import PyMongo
 import models
 from bson.objectid import ObjectId
 
-
 app = Flask(__name__)
 
 client = pymongo.MongoClient()
 db = client["mydb"]
 collection = db["collection"]
 
-admin = {'id': '0',
-         'username': 'admin',
+admin = {'username': 'admin',
          'password': 'password1',
          'token': None,
          'token_exp': None}
@@ -38,20 +36,16 @@ def hello_world():
 # registration
 @app.route('/registration', methods=['POST'])
 def registration():
-    if models.User.create_user(request.form['username'], request.form['password']):
-        return 'All good', 200
-
-    else:
-        return 'Something went wrong', 400
+    user = models.User.create_user(request.form['username'], request.form['password'])
+    collection.insert(user)
+    return 'Ok', 200
 
 
 # list of all users
 @app.route('/users', methods=['GET'])
 def users():
-    for i in range(collection.count_documents({})):
-        user = collection.find_one({'_id': 'i'})
-        print (user)
-    return 'I see my users!'
+    result = 'Here are the users: ' + (str(collection.distinct('username')))
+    return result, 200
 
 
 if __name__ == '__main__':
