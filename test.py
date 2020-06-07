@@ -1,9 +1,11 @@
 #***Reference: https://damyanon.net/post/flask-series-testing/***
 
 import unittest
-
 import models
-from models import User
+from app import app
+
+
+client = app.test_client()
 
 
 class MyTestClass(unittest.TestCase):
@@ -35,13 +37,25 @@ class MyTestClass(unittest.TestCase):
     self.assertEqual(2, 2)
 
   # test registration
-  def test_registration(User):
+  def test_create_user(User):
     models.User.create_user('String1', 'String2') == 200
 
 
   # test create item
-  def test_items(Item):
+  def test_create_item(Item):
     models.Item.create_item(0, 'String1', 'String2') == 200
+
+
+  # test registration POST
+  def test_registration_post(User):
+    response = client.post("/registration/")
+    response.status_code == 200
+
+
+  # test users GET
+  def test_users_get(self):
+    response = client.get("/users/")
+    response.status_code == 200
 
 
 # runs the unit tests in the module

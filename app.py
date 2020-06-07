@@ -1,6 +1,6 @@
 from flask import Flask, request
 from flask_pymongo import PyMongo
-
+import models
 
 app = Flask(__name__)
 app.config["MONGO_URI"] = "mongodb://localhost:27017/myDatabase"
@@ -20,16 +20,17 @@ def hello_world():
 # registration
 @app.route('/registration', methods=['POST'])
 def registration():
-    if create_user(request.form['username'], request.form['password']):
+    if models.User.create_user(request.form['username'], request.form['password']):
         return 'yeah haaahhh', 200
 
     else:
         return 'Ohh nooo', 400
 
 
-def create_user(username, password):
-#    new_user = {'username': username, 'password': password, 'token' : 1223}
-    return True
+# list of all users
+@app.route('/users', methods=['GET'])
+def users():
+    return True, 200
 
 if __name__ == '__main__':
     app.run()
