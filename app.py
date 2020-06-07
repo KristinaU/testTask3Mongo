@@ -5,9 +5,20 @@ import models
 
 app = Flask(__name__)
 
-myclient = pymongo.MongoClient("mongodb://127.0.0.1:27017/mydb")
+def set_db():
+    client = pymongo.MongoClient()
+    db = client["mydb"]
+    collection = db["collection"]
 
-mydb = myclient["mydb"]
+    admin = {'id': '0',
+                        'username': 'admin',
+                        'password': 'password1',
+                        'token': None,
+                        'token_exp': None}
+    collection.insert(admin)
+    print ('Oh we have an admin')
+
+
 
 # Show blank index page just in case
 @app.route('/')
@@ -24,6 +35,7 @@ def hello_world():
 # registration
 @app.route('/registration', methods=['POST'])
 def registration():
+    set_db()
     if models.User.create_user(request.form['username'], request.form['password']):
         return 'All good', 200
 
@@ -38,4 +50,5 @@ def users():
 
 
 if __name__ == '__main__':
+    app.set_db()
     app.run()
