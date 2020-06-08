@@ -15,6 +15,7 @@ db.item_counter.insert({'seq': 0})
 items_collection = db["items_collection"]
 
 
+
 # Show blank index page just in case
 @app.route('/')
 def index():
@@ -38,7 +39,8 @@ def registration():
         request.form['password']
     )
     collection.insert(user)
-    #   add errors handler
+#   add errors handler
+
     return 'User register success!', 200
 
 
@@ -77,19 +79,21 @@ def login():
 
             {"$set": {'token': token, 'token_exp': expiry_time}}
 
+
         )
 
         return token, 200
 
     else:
 
-        # if check_user fails
+# if check_user fails
         return 'Sorry, the password is wrong', 400
 
 
 def check_user(username, password):
     currentpass = collection.find_one({'username': username})['password']
-    #   here return an error if username not found
+#   here return an error if username not found
+
     if (currentpass == password):
         return True
     else:
@@ -151,6 +155,7 @@ def items():
 #    print(str(user_item_holder))
 
 #    return user_token_holder == user_item_holder
+
 
 
 if __name__ == '__main__':
