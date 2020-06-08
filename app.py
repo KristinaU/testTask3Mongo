@@ -14,17 +14,6 @@ client = pymongo.MongoClient()
 db = client["mydb"]
 collection = db["collection"]
 
-#   here return an error of connection not found
-
-admin = {'username': 'admin',
-         'password': 'password1',
-         'token': None,
-         'token_exp': None}
-collection.insert(admin)
-#   here may be an error
-print ('Oh we have an admin')
-
-
 
 # Show blank index page just in case
 @app.route('/')
@@ -45,7 +34,7 @@ def registration():
     user = models.User.create_user(request.form['username'], request.form['password'])
     collection.insert(user)
 #   add errors handler
-    return 'Ok', 200
+    return 'User register success!', 200
 
 
 # list of all users
@@ -59,22 +48,35 @@ def users():
 # login functionality
 @app.route('/login', methods=['POST'])
 def login():
+# define what time is now
     start_time = datetime.now()
 
-    expire_time = datetime.now() + timedelta(minutes=+30)
+# set what time token expires
+    expiry_time = datetime.now() + timedelta(minutes=+30)
 
+# an alphabet used to create random alphanumerical token
     letters = 'abcdefghyjklmnopqrstuvwxyz1234567890'
 
+# check (in separate method) that username and password match
     if check_user(request.form['username'], request.form['password']):
-#   here return an error if check fails
+
+# create random alphanumerical token
         token = ''.join(random.choice(letters) for i in range(32))
 
-        print('Now is ' + str(start_time))
-        print('Token expires at ' + str(expire_time))
+# set token and its expiry time to the user field in the database
+        collection.update(
+
+        { 'username': request.form['username']},
+
+        { "$set":    { 'token': token, 'token_exp': expiry_time } }
+
+        )
 
         return token, 200
 
     else:
+
+# if check_user fails
         return 'Sorry, the password is wrong', 400
 
 

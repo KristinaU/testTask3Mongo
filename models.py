@@ -14,7 +14,8 @@ class User():
         return new_user
 
 
-    def set_token(self, token, token_exp):
+    def set_token(username, token, token_exp):
+
         self.set({'token' : token})
         self.set({'token_exp': token_exp})
         return self
