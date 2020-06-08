@@ -1,12 +1,9 @@
 import json
 from datetime import datetime, timedelta
 import random
-
 import pymongo
 from flask import Flask, request
-from flask_pymongo import PyMongo
 import models
-from bson.objectid import ObjectId
 
 app = Flask(__name__)
 
@@ -15,7 +12,7 @@ db = client["mydb"]
 collection = db["collection"]
 item_counter = db["item_counter"]
 db.item_counter.insert({'seq': 0})
-items = db["items"]
+items_collection = db["items_collection"]
 
 
 # Show blank index page just in case
@@ -36,7 +33,10 @@ def hello_world():
 # registration
 @app.route('/registration', methods=['POST'])
 def registration():
-    user = models.User.create_user(request.form['username'], request.form['password'])
+    user = models.User.create_user(
+        request.form['username'],
+        request.form['password']
+    )
     collection.insert(user)
     #   add errors handler
     return 'User register success!', 200
@@ -45,7 +45,9 @@ def registration():
 # list of all users
 @app.route('/users', methods=['GET'])
 def users():
-    result = 'So we got the users as: ' + (str(collection.distinct('username')))
+    result = 'So we got the users as: ' + (
+        str(collection.distinct('username'))
+    )
     #   add error handler
     return result, 200
 
@@ -96,20 +98,59 @@ def check_user(username, password):
 
 def getCount(item_counter,name):
    return item_counter.find_and_modify( update= { '$inc': {'seq': 1}},
-                                        new=True ).get('seq');
+                                        new=True ).get('seq')
 
 
 # add item
 @app.route('/items/new', methods=['POST'])
 def add_item():
+    item_holder_username = collection.find_one(
+        {'token': request.form['token']})['username']
     item = models.Item.create_item(
-        getCount(db.item_counter, "seq"),
-        request.form['username'], request.form['name'],
-        request.form['attr1'], request.form['attr2']
+          getCount(db.item_counter, "seq"),
+          item_holder_username, request.form['attr1'],
+          request.form['attr2'], request.form['attr3']
     )
-    items.insert(item)
+    items_collection.insert(item)
     #   add errors handler
-    return 'Item added!', 200
+    result = str(item)
+    return 'Item added! Its attributes are: ' + result, 200
+
+
+# get items
+@app.route('/items/', methods=['GET'])
+def items():
+    current_username = collection.find_one(
+        {'token': request.form['token']})['username']
+    items = list(items_collection.find({'username': current_username}))
+    #   add error handler
+    return str(items)
+
+
+
+# delete item
+#@app.route('/items/:id', methods=['DELETE'])
+#def delete_item():
+
+#    print (request.form['token'], request.form['id'])
+#    token = request.form['token']
+#    item_id = request.form['id']
+#    if check_item(token, item_id):
+#        item = items_collection.find_one({'id': item_id})
+#        items_collection.remove(item)
+#        return 'Item successfully deleted', 200
+#    else:
+#        return 'Your data do not match', 400
+
+
+#def check_item(token, item_id):
+#    user_token_holder = items_collection.find_one({'token': token})
+#    user_item_holder = items_collection.find_one({'id': item_id})
+
+#    print (str(user_token_holder))
+#    print(str(user_item_holder))
+
+#    return user_token_holder == user_item_holder
 
 
 if __name__ == '__main__':
