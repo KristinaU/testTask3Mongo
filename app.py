@@ -75,19 +75,16 @@ def login():
         return token, 200
 
     else:
-        return 400
+        return 'Sorry, the password is wrong', 400
 
 
 def check_user(username, password):
     currentpass = collection.find_one({'username': username})['password']
 #   here return an error if username not found
-    print ('Current password = ' + currentpass)
-    print('Request password = ' + password)
-    print(currentpass == password)
     if (currentpass == password):
-        return True, 200
+        return True
     else:
-        return False, 400
+        return False
 
 
 if __name__ == '__main__':
