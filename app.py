@@ -13,23 +13,17 @@ app = Flask(__name__)
 client = pymongo.MongoClient()
 db = client["mydb"]
 collection = db["collection"]
-
-#   here return an error of connection not found
-
-admin = {'username': 'admin',
-         'password': 'password1',
-         'token': None,
-         'token_exp': None}
-collection.insert(admin)
-#   here may be an error
-print ('Oh we have an admin')
-
+item_counter = db["item_counter"]
+db.item_counter.insert({'seq': 0})
+items = db["items"]
 
 
 # Show blank index page just in case
 @app.route('/')
 def index():
     return 'Index Page'
+
+
 #   maybe an error if http server not configured
 
 
@@ -44,50 +38,76 @@ def hello_world():
 def registration():
     user = models.User.create_user(request.form['username'], request.form['password'])
     collection.insert(user)
-#   add errors handler
-    return 'Ok', 200
+    #   add errors handler
+    return 'User register success!', 200
 
 
 # list of all users
 @app.route('/users', methods=['GET'])
 def users():
     result = 'So we got the users as: ' + (str(collection.distinct('username')))
-#   add error handler
+    #   add error handler
     return result, 200
 
 
 # login functionality
 @app.route('/login', methods=['POST'])
 def login():
+    # define what time is now
     start_time = datetime.now()
 
-    expire_time = datetime.now() + timedelta(minutes=+30)
+    # set what time token expires
+    expiry_time = datetime.now() + timedelta(minutes=+30)
 
+    # an alphabet used to create random alphanumerical token
     letters = 'abcdefghyjklmnopqrstuvwxyz1234567890'
 
+    # check (in separate method) that username and password match
     if check_user(request.form['username'], request.form['password']):
-#   here return an error if check fails
+
+        # create random alphanumerical token
         token = ''.join(random.choice(letters) for i in range(32))
 
-        print('Now is ' + str(start_time))
-        print('Token expires at ' + str(expire_time))
+        # set token and its expiry time to the user field in the database
+        collection.update(
+
+            {'username': request.form['username']},
+
+            {"$set": {'token': token, 'token_exp': expiry_time}}
+
+        )
 
         return token, 200
 
     else:
-        return 400
+
+        # if check_user fails
+        return 'Sorry, the password is wrong', 400
 
 
 def check_user(username, password):
     currentpass = collection.find_one({'username': username})['password']
-#   here return an error if username not found
-    print ('Current password = ' + currentpass)
-    print('Request password = ' + password)
-    print(currentpass == password)
+    #   here return an error if username not found
     if (currentpass == password):
-        return True, 200
+        return True
     else:
-        return False, 400
+        return False
+
+
+def getCount(item_counter,name):
+   return item_counter.find_and_modify( update= { '$inc': {'seq': 1}},
+                                        new=True ).get('seq');
+
+
+# add item
+@app.route('/items/new', methods=['POST'])
+def add_item():
+    item = models.Item.create_item(
+        getCount(db.item_counter, "seq"),
+        request.form['name'], request.form['attr1'], request.form['attr2'])
+    items.insert(item)
+    #   add errors handler
+    return 'Item added!', 200
 
 
 if __name__ == '__main__':

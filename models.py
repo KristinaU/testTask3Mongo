@@ -5,6 +5,7 @@ from pymongo import collection
 import app
 
 
+# Model for User and its methods
 class User():
     def create_user(username, password):
         new_user = {'username' : username,
@@ -14,13 +15,12 @@ class User():
         return new_user
 
 
-    def set_token(self, token, token_exp):
-        self.set({'token' : token})
-        self.set({'token_exp': token_exp})
-        return self
-
-
 # Model for Item and its methods
 class Item():
-    def create_item(id, name, attr1):
-        return True, 200
+    def create_item(id, name, attr1, attr2):
+        new_item = {'id' : id,
+                    'name' : name,
+                    'attr1' : attr1,
+                    'attr2' : attr2}
+        return new_item
+
