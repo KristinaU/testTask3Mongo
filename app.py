@@ -104,7 +104,9 @@ def getCount(item_counter,name):
 def add_item():
     item = models.Item.create_item(
         getCount(db.item_counter, "seq"),
-        request.form['name'], request.form['attr1'], request.form['attr2'])
+        request.form['username'], request.form['name'],
+        request.form['attr1'], request.form['attr2']
+    )
     items.insert(item)
     #   add errors handler
     return 'Item added!', 200

@@ -17,8 +17,9 @@ class User():
 
 # Model for Item and its methods
 class Item():
-    def create_item(id, name, attr1, attr2):
+    def create_item(id, username, name, attr1, attr2):
         new_item = {'id' : id,
+                    'username': username,
                     'name' : name,
                     'attr1' : attr1,
                     'attr2' : attr2}
