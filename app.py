@@ -123,8 +123,7 @@ def add_item():
         {'token': request.get_json()['token']})['username']
     item = models.Item.create_item(
           getCount(db.item_counter, "seq"),
-          item_holder_username, request.get_json()['attr1'],
-          request.get_json()['attr2'], request.get_json()['attr3']
+          item_holder_username, request.get_json()['item_name']
     )
     items_collection.insert(item)
     #   add errors handler
