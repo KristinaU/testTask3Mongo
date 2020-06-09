@@ -30,7 +30,7 @@ Item: {
        <br>
        attr1     // attribute 1, custom
        <br>
-       attr3     // attribute 2, custom
+       attr2     // attribute 2, custom
        <br>
        attr3     // attribute 3, custom
        <br>
