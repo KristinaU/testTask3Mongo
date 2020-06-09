@@ -27,7 +27,7 @@ def index():
 # Show hello page to present app working
 @app.route('/hello')
 def hello_world():
-    return 'Hello World!'
+    return json.dumps('Hello World!')
 
 
 # registration
@@ -39,7 +39,7 @@ def registration():
     )
     collection.insert(user)
     #   add errors handler
-    return 'User register success!', 200
+    return json.dumps('User register success!'), 200
 
 
 # list of all users
@@ -49,7 +49,7 @@ def users():
         str(collection.distinct('username'))
     )
     #   add error handler
-    return result, 200
+    return json.dumps(result), 200
 
 
 # login functionality
@@ -78,8 +78,7 @@ def login():
             {"$set": {'token': token, 'token_exp': expiry_time}}
 
         )
-
-        return token, 200
+        return json.dumps(token), 200
 
     else:
 
@@ -114,7 +113,7 @@ def add_item():
     items_collection.insert(item)
     #   add errors handler
     result = str(item)
-    return 'Item added! Its attributes are: ' + result, 200
+    return json.dumps('Item added! Its attributes are: ' + result), 200
 
 
 # get items
@@ -124,7 +123,7 @@ def items():
         {'token': request.form['token']})['username']
     items = list(items_collection.find({'username': current_username}))
     #   add error handler
-    return str(items)
+    return json.dumps(str(items))
 
 
 
