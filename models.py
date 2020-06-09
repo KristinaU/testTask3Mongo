@@ -14,7 +14,6 @@ class User():
                     'token_exp' : None}
         return new_user
 
-
 # Model for Item and its methods
 class Item():
     def create_item(id, username, attr1, attr2, attr3):

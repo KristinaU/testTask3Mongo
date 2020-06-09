@@ -15,6 +15,7 @@ db.item_counter.insert({'seq': 0})
 items_collection = db["items_collection"]
 
 
+
 # Show blank index page just in case
 @app.route('/')
 def index():
@@ -33,6 +34,7 @@ def hello_world():
 # registration
 @app.route('/registration', methods=['POST'])
 def registration():
+
     this_username = request.get_json()['username']
     this_password = request.get_json()['password']
     if user_exists(this_username):
@@ -51,6 +53,7 @@ def user_exists(username):
         return True
     else:
         return False
+
 
 
 # list of all users
@@ -98,13 +101,14 @@ def login():
 
     else:
 
-        # if check_user fails
+# if check_user fails
         return 'Sorry, the password is wrong', 400
 
 
 def check_user(username, password):
     currentpass = collection.find_one({'username': username})['password']
-    #   here return an error if username not found
+#   here return an error if username not found
+
     if (currentpass == password):
         return True
     else:
@@ -168,6 +172,7 @@ def items():
 #    print(str(user_item_holder))
 
 #    return user_token_holder == user_item_holder
+
 
 
 if __name__ == '__main__':
