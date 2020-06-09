@@ -1,4 +1,5 @@
 import json
+import requests
 from datetime import datetime, timedelta
 import random
 import pymongo
@@ -54,11 +55,9 @@ def user_exists(username):
 # list of all users
 @app.route('/users', methods=['GET'])
 def users():
-    result = 'So we got the users as: ' + (
-        str(collection.distinct('username'))
-    )
+    result = collection.distinct('username')
     #   add error handler
-    return json.dumps(result), 200
+    return json.dumps(result, indent=4), 200
 
 
 # login functionality
@@ -73,6 +72,14 @@ def login():
     # an alphabet used to create random alphanumerical token
     letters = 'abcdefghyjklmnopqrstuvwxyz1234567890'
 
+#    try:
+
+#        request = r.json()
+#        return 'All good', 200
+#    except ValueError:
+#        return 'Query content is not valid JSON', 400
+
+
     # check (in separate method) that username and password match
     if check_user(request.form['username'], request.form['password']):
 
@@ -81,11 +88,8 @@ def login():
 
         # set token and its expiry time to the user field in the database
         collection.update(
-
             {'username': request.form['username']},
-
             {"$set": {'token': token, 'token_exp': expiry_time}}
-
         )
         return json.dumps(token), 200
 
@@ -130,10 +134,12 @@ def add_item():
 def items():
     current_username = collection.find_one(
         {'token': request.form['token']})['username']
-    items = list(items_collection.find({'username': current_username}))
+    items = list(items_collection.find(
+        {'username': current_username},
+        { '_id': 0})
+    )
     #   add error handler
-    return json.dumps(str(items))
-
+    return json.dumps(items, indent=4)
 
 
 # delete item
