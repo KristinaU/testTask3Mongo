@@ -1,5 +1,4 @@
 import json
-import requests
 from datetime import datetime, timedelta
 import random
 import pymongo
@@ -34,12 +33,14 @@ def hello_world():
 # registration
 @app.route('/registration', methods=['POST'])
 def registration():
-    if user_exists(request.form['username']):
+    this_username = request.get_json()['username']
+    this_password = request.get_json()['password']
+    if user_exists(this_username):
         return json.dumps('Username already registered!'), 400
     else:
         user = models.User.create_user(
-            request.form['username'],
-            request.form['password']
+            this_username,
+            this_password
         )
         collection.insert(user)
 
@@ -79,16 +80,18 @@ def login():
 #    except ValueError:
 #        return 'Query content is not valid JSON', 400
 
+    this_username = request.get_json()['username']
+    this_password = request.get_json()['password']
 
     # check (in separate method) that username and password match
-    if check_user(request.form['username'], request.form['password']):
+    if check_user(this_username, this_password):
 
         # create random alphanumerical token
         token = ''.join(random.choice(letters) for i in range(32))
 
         # set token and its expiry time to the user field in the database
         collection.update(
-            {'username': request.form['username']},
+            {'username': this_username},
             {"$set": {'token': token, 'token_exp': expiry_time}}
         )
         return json.dumps(token), 200
@@ -117,11 +120,11 @@ def getCount(item_counter,name):
 @app.route('/items/new', methods=['POST'])
 def add_item():
     item_holder_username = collection.find_one(
-        {'token': request.form['token']})['username']
+        {'token': request.get_json()['token']})['username']
     item = models.Item.create_item(
           getCount(db.item_counter, "seq"),
-          item_holder_username, request.form['attr1'],
-          request.form['attr2'], request.form['attr3']
+          item_holder_username, request.get_json()['attr1'],
+          request.get_json()['attr2'], request.get_json()['attr3']
     )
     items_collection.insert(item)
     #   add errors handler
@@ -130,13 +133,13 @@ def add_item():
 
 
 # get items
-@app.route('/items/', methods=['GET'])
+@app.route('/items', methods=['GET'])
 def items():
-    current_username = collection.find_one(
-        {'token': request.form['token']})['username']
+    token = request.args['token']
+    current_username = collection.find_one({'token': token})['username']
     items = list(items_collection.find(
         {'username': current_username},
-        { '_id': 0})
+        {'_id': 0})
     )
     #   add error handler
     return json.dumps(items, indent=4)
