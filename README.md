@@ -12,7 +12,7 @@ Queries and responces format: JSON
 <h3>Models:</h3>
 
 User: {
-<br>username  // identification field
+<br>username     // identification field, uniqueness checked on registration step
        <br>
        password  // stored plain
        <br>
@@ -28,11 +28,7 @@ Item: {
        <br>
        username  // foreign key to set many to one relationship with Users
        <br>
-       attr1     // attribute 1, custom
-       <br>
-       attr2     // attribute 2, custom
-       <br>
-       attr3     // attribute 3, custom
+       item_name // item_name, might be not unique
        <br>
        }
        
