@@ -33,13 +33,22 @@ def hello_world():
 # registration
 @app.route('/registration', methods=['POST'])
 def registration():
-    user = models.User.create_user(
-        request.form['username'],
-        request.form['password']
-    )
-    collection.insert(user)
-    #   add errors handler
-    return json.dumps('User register success!'), 200
+    if user_exists(request.form['username']):
+        return json.dumps('Username already registered!'), 400
+    else:
+        user = models.User.create_user(
+            request.form['username'],
+            request.form['password']
+        )
+        collection.insert(user)
+
+        return json.dumps('User register success!'), 200
+
+def user_exists(username):
+    if collection.find_one({'username': username}) is not None:
+        return True
+    else:
+        return False
 
 
 # list of all users
