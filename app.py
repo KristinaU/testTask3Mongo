@@ -18,32 +18,32 @@ items_collection = db["items_collection"]
 # Show blank index page just in case
 @app.route('/')
 def index():
-    return 'Index Page'
+    return "Index Page"
 
 
 # Show hello page to present app working
 @app.route('/hello')
 def hello_world():
-    return 'Hello World!'
+    return "Hello World!"
 
 
 # registration
 @app.route('/registration', methods=['POST'])
 def registration():
-
     try:
-
         this_username = request.get_json()['username']
         this_password = request.get_json()['password']
+    except KeyError:
+        return json.dumps("Either Username or Password missing"), 500
+    except:
+        return json.dumps("Query content is not valid JSON"), 400
 
-    except ValueError:
-        return 'Query content is not valid JSON', 400
-
-    if this_username == '' or this_password == '':
-        return json.dumps('Please fill required fields'), 204
+    if this_username == "" or this_password == "":
+        # this line does not return the message but works well
+        return json.dumps("Please fill required fields"), 204
 
     elif user_exists(this_username):
-        return json.dumps('Username already registered!'), 400
+        return json.dumps("Username already registered!"), 400
 
     else:
         user = models.User.create_user(
@@ -53,9 +53,10 @@ def registration():
         try:
             collection.insert(user)
         except:
-            return json.dumps('Database server error'), 500
+            return json.dumps("Database server error"), 500
 
-        return json.dumps('User register success!'), 200
+        return json.dumps("User register success!"), 200
+
 
 def user_exists(username):
     if collection.find_one({'username': username}) is not None:
@@ -69,9 +70,9 @@ def user_exists(username):
 def users():
     try:
         result = collection.distinct('username')
-        return json.dumps(result, indent=4), 200
     except:
-        return json.dumps('Database server error'), 500
+        return json.dumps("Database server error"), 500
+    return json.dumps(result, indent=4), 200
 
 
 # login functionality
@@ -83,8 +84,8 @@ def login():
     # set what time token expires
     expiry_time = datetime.now() + timedelta(minutes=+30)
 
-# Here we may check database and remove expired tokens
-# that is not implemented as beyond the task specification
+    # Here we may check database and remove expired tokens
+    # that is not implemented as beyond the task specification
 
     # an alphabet used to create random alphanumerical token
     letters = 'abcdefghyjklmnopqrstuvwxyz1234567890'
@@ -92,8 +93,8 @@ def login():
     try:
         this_username = request.get_json()['username']
         this_password = request.get_json()['password']
-    except ValueError:
-        return 'Query content is not valid JSON', 400
+    except:
+        return "Query content is not valid JSON", 400
 
     # check (in separate method) that username and password match
     if check_user(this_username, this_password):
@@ -109,10 +110,10 @@ def login():
             )
             return json.dumps(token), 200
         except:
-            return json.dumps('Database server error'), 500
+            return json.dumps("Database server error"), 500
     else:
         # if check_user fails
-        return 'Username and password do not match', 400
+        return "Username and password do not match", 400
 
 
 def check_user(username, password):
@@ -120,39 +121,51 @@ def check_user(username, password):
         currentpass = collection.find_one({'username': username})['password']
     except:
         return False
-    return (currentpass == password)
+    return currentpass == password
 
 
-def getCount(item_counter):
-   return item_counter.find_and_modify( update= { '$inc': {'count': 1}},
-                                        new=True ).get('count')
+# this method ensures the items have unique (int) id
+def get_count():
+    return item_counter.find_and_modify(update={'$inc': {'count': 1}},
+                                        new=True).get('count')
 
 
 # add item
 @app.route('/items/new', methods=['POST'])
 def add_item():
-    item_holder_username = collection.find_one(
-        {'token': request.get_json()['token']})['username']
+    try:
+        item_holder_username = collection.find_one(
+            {'token': request.get_json()['token']})['username']
+    except:
+        return json.dumps(
+            "Your token is not valid or has been expired"
+        ), 500
+
     item = models.Item.create_item(
-          getCount(db.item_counter),
-          item_holder_username, request.get_json()['item_name']
+        get_count(),
+        item_holder_username, request.get_json()['item_name']
     )
-    items_collection.insert(item)
-    #   add errors handler
+    try:
+        items_collection.insert(item)
+    except:
+        return json.dumps("Database server error"), 500
+
     result = str(item)
-    return json.dumps('Item added! Its attributes are: ' + result), 200
+    return json.dumps("Item added! Its attributes are: " + result), 200
 
 
-# get items
+# get items for user identified by token
 @app.route('/items', methods=['GET'])
 def items():
-    token = request.args['token']
-
+    try:
+        token = request.args['token']
+    except:
+        return "Sorry, request failed", 400
     try:
         current_username = collection.find_one({'token': token})['username']
     except:
         return json.dumps(
-            'Your token is not valid or has been expired'
+            "Your token is not valid or has been expired"
         ), 500
 
     items = list(items_collection.find(
@@ -164,28 +177,39 @@ def items():
 
 
 # delete item
-@app.route('/items/<id>', methods=['DELETE'])
-def delete_item(id):
-    token = request.args['token']
-
+@app.route('/items/<item_id_str>', methods=['DELETE'])
+def delete_item(item_id_str):
     try:
-        item_id = int(id)
+        token = request.args['token']
+    except:
+        return json.dumps("Sorry, request failed"), 400
+    # here url id argument requires conversion to int to become valid field argument
+    try:
+        item_id = int(item_id_str)
     except ValueError:
-        return("Could not convert Item ID to an integer.")
+        return json.dumps("Could not convert Item ID to an integer.")
 
     if check_item(token, item_id):
         item = items_collection.find_one({'id': item_id})
         items_collection.remove(item)
-        return json.dumps('Item successfully deleted'), 204
+# this line does not return the message but works well
+        return json.dumps("Item successfully deleted"), 204
     else:
-        return json.dumps('Your data do not match'), 400
+# this result will show if either token or id invalid
+        return json.dumps("Data you provided do not match our records"), 400
 
 
+# This method checks if token provided and item to delete
+# belong to the same user
 def check_item(token, item_id):
-    username_token_holder = collection.find_one(
-        {'token': token})['username']
-    username_item_holder = items_collection.find_one(
-        {'id': item_id})['username']
+    try:
+        username_token_holder = collection.find_one(
+            {'token': token})['username']
+        username_item_holder = items_collection.find_one(
+            {'id': item_id})['username']
+# if 'username' fields do not match we raise an error regardless reason
+    except:
+        return False
     if username_token_holder is not None:
         return username_token_holder == username_item_holder
     else:
@@ -194,4 +218,3 @@ def check_item(token, item_id):
 
 if __name__ == '__main__':
     app.run()
-
