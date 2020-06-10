@@ -38,12 +38,12 @@ class MyTestClass(unittest.TestCase):
         self.assertEqual(2, 2)
 
     # test registration
-#    def test_create_user(User):
-#        models.User.create_user('String1', 'String2') == 200
+    def test_create_user(User):
+        models.User.create_user('String1', 'String2') == 200
 
     # test create item
-#    def test_create_item(Item):
-#        models.Item.create_item(0, 'String1', 'String2') == 200
+    def test_create_item(Item):
+        models.Item.create_item(0, 'String1', 'String2') == 200
 
     # test registration POST
 #    def test_registration_post(User):
