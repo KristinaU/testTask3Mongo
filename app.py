@@ -11,7 +11,7 @@ client = pymongo.MongoClient()
 db = client["mydb"]
 collection = db["collection"]
 item_counter = db["item_counter"]
-db.item_counter.insert({'seq': 0})
+db.item_counter.insert({'count': 0})
 items_collection = db["items_collection"]
 
 
@@ -115,9 +115,9 @@ def check_user(username, password):
         return False
 
 
-def getCount(item_counter,name):
-   return item_counter.find_and_modify( update= { '$inc': {'seq': 1}},
-                                        new=True ).get('seq')
+def getCount(item_counter):
+   return item_counter.find_and_modify( update= { '$inc': {'count': 1}},
+                                        new=True ).get('count')
 
 
 # add item
@@ -126,7 +126,7 @@ def add_item():
     item_holder_username = collection.find_one(
         {'token': request.get_json()['token']})['username']
     item = models.Item.create_item(
-          getCount(db.item_counter, "seq"),
+          getCount(db.item_counter),
           item_holder_username, request.get_json()['item_name']
     )
     items_collection.insert(item)
@@ -149,30 +149,29 @@ def items():
 
 
 # delete item
-#@app.route('/items/:id', methods=['DELETE'])
-#def delete_item():
-
-#    print (request.form['token'], request.form['id'])
-#    token = request.form['token']
-#    item_id = request.form['id']
-#    if check_item(token, item_id):
-#        item = items_collection.find_one({'id': item_id})
-#        items_collection.remove(item)
-#        return 'Item successfully deleted', 200
-#    else:
-#        return 'Your data do not match', 400
+@app.route('/items/<id>', methods=['DELETE'])
+def delete_item(id):
+    token = request.args['token']
+    item_id = int(id)
+    if check_item(token, item_id):
+        item = items_collection.find_one({'id': item_id})
+        items_collection.remove(item)
+        return json.dumps('Item successfully deleted'), 204
+    else:
+        return json.dumps('Your data do not match'), 400
 
 
-#def check_item(token, item_id):
-#    user_token_holder = items_collection.find_one({'token': token})
-#    user_item_holder = items_collection.find_one({'id': item_id})
-
-#    print (str(user_token_holder))
-#    print(str(user_item_holder))
-
-#    return user_token_holder == user_item_holder
-
+def check_item(token, item_id):
+    username_token_holder = collection.find_one(
+        {'token': token})['username']
+    username_item_holder = items_collection.find_one(
+        {'id': item_id})['username']
+    if username_token_holder is not None:
+        return username_token_holder == username_item_holder
+    else:
+        return False
 
 
 if __name__ == '__main__':
     app.run()
+
