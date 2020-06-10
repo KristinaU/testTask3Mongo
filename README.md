@@ -35,14 +35,14 @@ Item: {
 
 <h3>Methods allowed:</h3>
 
-/registration: [POST], args: [username] [password], check: if username already exists, return: "Success!"
+/registration: [POST] args: [username] [password], check: if username already exists, return: "Success!"
 
-/login: [POST], args: [username] [password], check: username and password match, return: temporary token
+/login: [POST] args: [username] [password], check: username and password match, return: temporary token
 
-/users: [GET], args: None, return: indented list of users
+/users: [GET] args: None, return: indented list of users
 
-/items/new: [POST], args: temporary token, check: find user with this token, return: item created, item attributes
+/items/new: [POST] args: temporary token, check: find user with this token, return: item created, item attributes
 
-/items: [GET], args: temporary token, check: find user with this token, return: items for this user with their attributes
+/items: [GET] args: temporary token, check: find user with this token, return: items for this user with their attributes
 
-/items/:id [DELETE]: NOT IMPLEMENTED
+/items/:id [DELETE]: args: temporary token, check: if token holder is actually item holder return: NO message unfortunately, status code only but works.
