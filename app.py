@@ -15,36 +15,45 @@ db.item_counter.insert({'count': 0})
 items_collection = db["items_collection"]
 
 
-
 # Show blank index page just in case
 @app.route('/')
 def index():
     return 'Index Page'
 
 
-#   maybe an error if http server not configured
-
-
 # Show hello page to present app working
 @app.route('/hello')
 def hello_world():
-    return json.dumps('Hello World!')
+    return 'Hello World!'
 
 
 # registration
 @app.route('/registration', methods=['POST'])
 def registration():
 
-    this_username = request.get_json()['username']
-    this_password = request.get_json()['password']
-    if user_exists(this_username):
+    try:
+
+        this_username = request.get_json()['username']
+        this_password = request.get_json()['password']
+
+    except ValueError:
+        return 'Query content is not valid JSON', 400
+
+    if this_username == '' or this_password == '':
+        return json.dumps('Please fill required fields'), 204
+
+    elif user_exists(this_username):
         return json.dumps('Username already registered!'), 400
+
     else:
         user = models.User.create_user(
             this_username,
             this_password
         )
-        collection.insert(user)
+        try:
+            collection.insert(user)
+        except:
+            return json.dumps('Database server error'), 500
 
         return json.dumps('User register success!'), 200
 
@@ -55,13 +64,14 @@ def user_exists(username):
         return False
 
 
-
 # list of all users
 @app.route('/users', methods=['GET'])
 def users():
-    result = collection.distinct('username')
-    #   add error handler
-    return json.dumps(result, indent=4), 200
+    try:
+        result = collection.distinct('username')
+        return json.dumps(result, indent=4), 200
+    except:
+        return json.dumps('Database server error'), 500
 
 
 # login functionality
@@ -73,18 +83,17 @@ def login():
     # set what time token expires
     expiry_time = datetime.now() + timedelta(minutes=+30)
 
+# Here we may check database and remove expired tokens
+# that is not implemented as beyond the task specification
+
     # an alphabet used to create random alphanumerical token
     letters = 'abcdefghyjklmnopqrstuvwxyz1234567890'
 
-#    try:
-
-#        request = r.json()
-#        return 'All good', 200
-#    except ValueError:
-#        return 'Query content is not valid JSON', 400
-
-    this_username = request.get_json()['username']
-    this_password = request.get_json()['password']
+    try:
+        this_username = request.get_json()['username']
+        this_password = request.get_json()['password']
+    except ValueError:
+        return 'Query content is not valid JSON', 400
 
     # check (in separate method) that username and password match
     if check_user(this_username, this_password):
@@ -93,26 +102,25 @@ def login():
         token = ''.join(random.choice(letters) for i in range(32))
 
         # set token and its expiry time to the user field in the database
-        collection.update(
-            {'username': this_username},
-            {"$set": {'token': token, 'token_exp': expiry_time}}
-        )
-        return json.dumps(token), 200
-
+        try:
+            collection.update(
+                {'username': this_username},
+                {"$set": {'token': token, 'token_exp': expiry_time}}
+            )
+            return json.dumps(token), 200
+        except:
+            return json.dumps('Database server error'), 500
     else:
-
-# if check_user fails
-        return 'Sorry, the password is wrong', 400
+        # if check_user fails
+        return 'Username and password do not match', 400
 
 
 def check_user(username, password):
-    currentpass = collection.find_one({'username': username})['password']
-#   here return an error if username not found
-
-    if (currentpass == password):
-        return True
-    else:
+    try:
+        currentpass = collection.find_one({'username': username})['password']
+    except:
         return False
+    return (currentpass == password)
 
 
 def getCount(item_counter):
@@ -139,12 +147,19 @@ def add_item():
 @app.route('/items', methods=['GET'])
 def items():
     token = request.args['token']
-    current_username = collection.find_one({'token': token})['username']
+
+    try:
+        current_username = collection.find_one({'token': token})['username']
+    except:
+        return json.dumps(
+            'Your token is not valid or has been expired'
+        ), 500
+
     items = list(items_collection.find(
         {'username': current_username},
         {'_id': 0})
     )
-    #   add error handler
+
     return json.dumps(items, indent=4)
 
 
@@ -152,7 +167,12 @@ def items():
 @app.route('/items/<id>', methods=['DELETE'])
 def delete_item(id):
     token = request.args['token']
-    item_id = int(id)
+
+    try:
+        item_id = int(id)
+    except ValueError:
+        return("Could not convert Item ID to an integer.")
+
     if check_item(token, item_id):
         item = items_collection.find_one({'id': item_id})
         items_collection.remove(item)
