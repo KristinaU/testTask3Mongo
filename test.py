@@ -37,13 +37,40 @@ class MyTestClass(unittest.TestCase):
     def test_equal_numbers(self):
         self.assertEqual(2, 2)
 
-    # test registration
-    def test_create_user(User):
-        models.User.create_user('String1', 'String2') == 200
+    # test Model create user username
+    def test_model_create_user_username(self):
+        new_user = models.User.create_user('String1', 'String2')
+        self.assertEqual(new_user['username'], 'String1')
 
-    # test create item
-    def test_create_item(Item):
-        models.Item.create_item(0, 'String1', 'String2') == 200
+
+    # test Model create user password
+    def test_model_create_user_password(self):
+        new_user = models.User.create_user('String1', 'String2')
+        self.assertEqual(new_user['password'], 'String2')
+
+
+    # test Model create item id
+    def test_create_item_id(self):
+        new_item = models.Item.create_item(0, 'String1', 'String2')
+        self.assertEqual(new_item['id'], 0)
+
+
+    # test Model create item id
+    def test_create_item_username(self):
+        new_item = models.Item.create_item(1, 'String3', 'String3')
+        self.assertEqual(new_item['username'], 'String3')
+
+
+    # test Model create item id
+    def test_create_item_item_name(self):
+        new_item = models.Item.create_item(2, 'String4', 'String5')
+        self.assertEqual(new_item['item_name'], 'String5')
+
+
+    # test Model create item id
+    def test_create_item_id(self):
+        new_item = models.Item.create_item(0, 'String1', 'String2')
+        self.assertEqual(new_item['id'], 0)
 
     # test registration POST
 #    def test_registration_post(User):
