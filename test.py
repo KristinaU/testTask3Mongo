@@ -55,13 +55,13 @@ class MyTestClass(unittest.TestCase):
         print('Test 4 OK', new_item['id'])
         self.assertEqual(new_item['id'], 0)
 
-    # test Model create item id
+    # test Model create item username
     def test_create_item_username(self):
         new_item = models.Item.create_item(1, 'String3', 'String3')
         print('Test 5 OK' + new_item['username'])
         self.assertEqual(new_item['username'], 'String3')
 
-    # test Model create item id
+    # test Model create item item_name
     def test_create_item_item_name(self):
         new_item = models.Item.create_item(2, 'String4', 'String5')
         print('Test 6 OK' + new_item['item_name'])
