@@ -45,4 +45,8 @@ Item: {
 
 /items: [GET] args: temporary token, check: find user with this token, return: items for this user with their attributes
 
-/items/:id [DELETE]: args: temporary token, check: if token holder is actually item holder return: NO message unfortunately, status code only but works.
+/items/:id [DELETE]: args: temporary token, check: if token holder is actually item holder, return: Message 'Deleted'
+
+<h3>Testing:</h3>
+
+Unit tests provided for Models.<br>App functionality has been tested with <b>Postman</b>
