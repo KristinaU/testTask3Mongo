@@ -40,7 +40,7 @@ def registration():
 
     if this_username == "" or this_password == "":
         # this line does not return the message but works well
-        return json.dumps("Please fill required fields"), 204
+        return json.dumps("Please fill required fields"), 401
 
     elif user_exists(this_username):
         return json.dumps("Username already registered!"), 400
@@ -192,8 +192,7 @@ def delete_item(item_id_str):
     if check_item(token, item_id):
         item = items_collection.find_one({'id': item_id})
         items_collection.remove(item)
-# this line does not return the message but works well
-        return json.dumps("Item successfully deleted"), 204
+        return json.dumps("Item successfully deleted"), 200
     else:
 # this result will show if either token or id invalid
         return json.dumps("Data you provided do not match our records"), 400
@@ -214,6 +213,7 @@ def check_item(token, item_id):
         return username_token_holder == username_item_holder
     else:
         return False
+
 
 
 if __name__ == '__main__':
