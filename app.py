@@ -39,7 +39,6 @@ def registration():
         return json.dumps("Query content is not valid JSON"), 400
 
     if this_username == "" or this_password == "":
-        # this line does not return the message but works well
         return json.dumps("Please fill required fields"), 401
 
     elif user_exists(this_username):
@@ -58,6 +57,7 @@ def registration():
         return json.dumps("User register success!"), 200
 
 
+# here we test if username provided already exists in database
 def user_exists(username):
     if collection.find_one({'username': username}) is not None:
         return True
@@ -79,9 +79,9 @@ def users():
 @app.route('/login', methods=['POST'])
 def login():
     # define what time is now
-    start_time = datetime.now()
+    current_time = datetime.now()
 
-    # set what time token expires
+    # set when the token expires (I set 30 minutes lifetime)
     expiry_time = datetime.now() + timedelta(minutes=+30)
 
     # Here we may check database and remove expired tokens
@@ -102,7 +102,7 @@ def login():
         # create random alphanumerical token
         token = ''.join(random.choice(letters) for i in range(32))
 
-        # set token and its expiry time to the user field in the database
+        # set token and its expiry time to the user fields in the database
         try:
             collection.update(
                 {'username': this_username},
@@ -116,6 +116,7 @@ def login():
         return "Username and password do not match", 400
 
 
+# check if username and password provided match database entry
 def check_user(username, password):
     try:
         currentpass = collection.find_one({'username': username})['password']
