@@ -34,7 +34,7 @@ def registration():
         this_username = request.get_json()['username']
         this_password = request.get_json()['password']
     except KeyError:
-        return json.dumps("Either Username or Password missing"), 500
+        return json.dumps("Either Username or Password missing"), 400
     except:
         return json.dumps("Query content is not valid JSON"), 400
 
@@ -63,16 +63,6 @@ def user_exists(username):
         return True
     else:
         return False
-
-
-# list of all users
-@app.route('/users', methods=['GET'])
-def users():
-    try:
-        result = collection.distinct('username')
-    except:
-        return json.dumps("Database server error"), 500
-    return json.dumps(result, indent=4), 200
 
 
 # login functionality
@@ -140,7 +130,7 @@ def add_item():
     except:
         return json.dumps(
             "Your token is not valid or has been expired"
-        ), 500
+        ), 401
 
     item = models.Item.create_item(
         get_count(),
@@ -167,7 +157,7 @@ def items():
     except:
         return json.dumps(
             "Your token is not valid or has been expired"
-        ), 500
+        ), 401
 
     items = list(items_collection.find(
         {'username': current_username},
