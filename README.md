@@ -39,8 +39,6 @@ Item: {
 
 /login: [POST] args: [username] [password], check: username and password match, return: temporary token
 
-/users: [GET] args: None, return: indented list of users
-
 /items/new: [POST] args: temporary token, check: find user with this token, return: item created, item attributes
 
 /items: [GET] args: temporary token, check: find user with this token, return: items for this user with their attributes
